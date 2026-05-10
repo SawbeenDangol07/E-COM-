@@ -8,6 +8,7 @@ const {
 } = require("../../utilities/randomStringGenerator");
 
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 class authController {
   async register(req, res, next) {
@@ -139,6 +140,7 @@ class authController {
       const userDetail = await Usersrvc.getSingleUserByfilter({
         email: email,
       });
+
       if (!userDetail) {
         throw {
           code: 404,
@@ -158,14 +160,25 @@ class authController {
         expiresIn: "10d",
       });
 
+      console.log(authToken);
       res.json({
         data: authToken,
         message: "You are logged in",
         status: "LOGIN_SUCCESSFULL",
       });
     } catch (exception) {
+      console.log(exception);
+
       next(exception);
     }
+  }
+
+  async getLoggedInUser(req, res, next) {
+    res.json({
+      data: req.loggedInUser,
+      message: "Your Profile",
+      status: "OK",
+    });
   }
 }
 
