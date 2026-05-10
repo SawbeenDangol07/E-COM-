@@ -12,4 +12,6 @@ authRouter.post(
   authctrl.register,
 );
 
+authRouter.get("/activate/:token", authctrl.activateUserByToken);
+
 module.exports = authRouter;
