@@ -13,5 +13,6 @@ authRouter.post(
 );
 
 authRouter.get("/activate/:token", authctrl.activateUserByToken);
+authRouter.get("/reactive/:token", authctrl.reactivateUser);
 
 module.exports = authRouter;
