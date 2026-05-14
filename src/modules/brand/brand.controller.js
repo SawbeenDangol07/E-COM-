@@ -1,5 +1,20 @@
+const brandService = require("./brand.service");
+
 class BrandController {
-  async create(req, res, next) {}
+  async create(req, res, next) {
+    try {
+      const data = await brandService.transformToBrandCreate(req);
+      const brand = await brandService.storeBrand(data);
+
+      res.json({
+        data: brand,
+        message: "Brand Created Successfully",
+        status: "BRAND_CREATED",
+      });
+    } catch (exception) {
+      next(exception);
+    }
+  }
   async listAll(req, res, next) {}
   async getDetail(req, res, next) {}
   async update(req, res, next) {}
