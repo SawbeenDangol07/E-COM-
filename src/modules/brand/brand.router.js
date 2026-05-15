@@ -7,7 +7,7 @@ const BrandDTO = require("./brand.validator");
 const brandRouter = require("express").Router();
 
 brandRouter.get("/:slug/detail", brandCtrl.getDetailBySlug);
-brandRouter.get("/", brandCtrl.listAll);
+brandRouter.get("/", checkLogin(), brandCtrl.listAll);
 brandRouter.post(
   "/",
   checkLogin(["seller"]),

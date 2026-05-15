@@ -15,7 +15,9 @@ class BrandController {
       next(exception);
     }
   }
-  async listAll(req, res, next) {}
+  async listAll(req, res, next) {
+    const data = brandService.getAllRowsByFilter()
+  }
   async getDetail(req, res, next) {}
   async update(req, res, next) {}
   async delete(req, res, next) {}
