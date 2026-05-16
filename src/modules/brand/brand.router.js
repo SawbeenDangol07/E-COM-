@@ -11,13 +11,19 @@ brandRouter.get("/", checkLogin(), brandCtrl.listAll);
 brandRouter.post(
   "/",
   checkLogin(["seller"]),
-  uploader().single("Logo"),
+  uploader().single("logo"),
   bodyValidator(BrandDTO),
   brandCtrl.create,
 );
 
-brandRouter.get("/:brandId", brandCtrl.getDetail);
-brandRouter.put("/:brandId", brandCtrl.update);
-brandRouter.delete("/:brandId", brandCtrl.delete);
+brandRouter.get("/:brandId", checkLogin(), brandCtrl.getDetail);
+brandRouter.put(
+  "/:brandId",
+  checkLogin(["seller"]),
+  uploader().single("logo"),
+  bodyValidator(BrandDTO),
+  brandCtrl.update,
+);
+brandRouter.delete("/:brandId", checkLogin(), brandCtrl.delete);
 
 module.exports = brandRouter;
