@@ -15,7 +15,7 @@ categoryRouter.post(
 
 categoryRouter.get("/:brandId", checkLogin(), categoryCtrl.getDetail);
 categoryRouter.put(
-  "/:brandId",c
+  "/:brandId",
   checkLogin(["seller"]),
   uploader().single("logo"),
   bodyValidator(BrandDTO),
