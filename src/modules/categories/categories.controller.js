@@ -1,3 +1,4 @@
+const { UserRoles } = require("../../config/constant");
 const categoriesService = require("./categories.service");
 
 class categoryController {
@@ -17,7 +18,13 @@ class categoryController {
 
   async getAllCategories() {
     try {
-      
+      let filter = {};
+      if (req.loggedInUser.role !== UserRoles.ADMIN) {
+        filter = {
+          ...filter,
+          createdBy: req.loggedInUser._id,
+        };``
+      }
     } catch (exception) {
       next(exception);
     }
