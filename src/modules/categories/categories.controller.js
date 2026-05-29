@@ -5,7 +5,22 @@ class categoryController {
     try {
       const data = await categoriesService.transformToCategoryData(req);
       const category = await categoriesService.storeCategory(data);
-    } catch (exception) {}
+      res.json({
+        data: category,
+        message: "Category added sucessfully",
+        status: "OK",
+      });
+    } catch (exception) {
+      next(exception);
+    }
+  }
+
+  async getAllCategories() {
+    try {
+      
+    } catch (exception) {
+      next(exception);
+    }
   }
 }
 
