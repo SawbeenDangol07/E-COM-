@@ -1,6 +1,5 @@
 const productRouter = require("express").Router();
 
-
-productRouter.post("",)
+productRouter.post("");
 
 module.exports = productRouter;
