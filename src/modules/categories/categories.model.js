@@ -1,43 +1,46 @@
 const mongoose = require("mongoose");
 const { Status } = require("../../config/constant");
 
-const categorySchema = new mongoose.Schema(
+const CategorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
+      min: 3,
+      max: 50,
+      unique: true,
     },
     slug: {
       type: String,
       required: true,
+      unique: true,
     },
-    status: {
-      type: String,
-      enum: Object.values(Status),
-      default: Status.ACTIVE,
-    },
-    parentId: {
+    parent: {
       type: mongoose.Types.ObjectId,
       ref: "Category",
       default: null,
     },
-    brandId: [
+
+    image: {
+      publicId: String,
+      secure_url: String,
+      thumbUrl: String,
+    },
+    brands: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "Category",
+        ref: "Brand",
         default: null,
       },
     ],
-
-    image: {
-      publicID: String,
-      url: String,
-      optimization: String,
+    status: {
+      type: String,
+      enum: Object.values(Status),
+      default: Status.INACTIVE,
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      default: null,
     },
     updatedBy: {
       type: mongoose.Types.ObjectId,
@@ -45,12 +48,12 @@ const categorySchema = new mongoose.Schema(
       default: null,
     },
   },
+
   {
     autoCreate: true,
     autoIndex: true,
     timestamps: true,
-  },
+  }
 );
 
-const categoryModel = mongoose.model("Category", categorySchema);
-module.exports = categoryModel;
+module.exports = mongoose.model("Category", CategorySchema);

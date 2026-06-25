@@ -1,14 +1,19 @@
-const joi = require("joi");
+const Joi = require("joi");
 const { Status } = require("../../config/constant");
 
-const CategoryDTO = joi.object({
-  name: joi.string().min(2).max(100).required(),
-  parentId: joi.string().optional().allow(null, "").default(null),
-  brandId: joi
-    .array()
-    .items(joi.string().optional().allow(null, "").default(null)),
-  status: joi.string().allow("active", "inactive").default(Status.INACTIVE),
-  image: joi.string().allow(null, "").optional().default(null),
+const CategoryDataDTO = Joi.object({
+  name: Joi.string().min(2).max(100).required(),
+  status: Joi.string()
+    .regex(/^(active|inactive)$/)
+    .default(Status.INACTIVE),
+  parent: Joi.string().allow(null, "").optional().default(null),
+  brands: Joi.array()
+    .items(Joi.string().allow(null, "").optional().default(null))
+    .allow(null, "")
+    .default(null),
+  image: Joi.string().allow(null, "").optional().default(null),
 });
 
-module.exports = CategoryDTO;
+module.exports = {
+  CategoryDataDTO,
+};

@@ -60,6 +60,16 @@ class ProductService {
       throw exception;
     }
   }
+
+  async getAllRowByFilter(filter) {
+    try {
+      const data = await ProductModel.find(filter)
+      .populate();
+      return data;
+    } catch (exception) {
+      throw exception;
+    }
+  }
 }
 
 module.exports = new ProductService();

@@ -1,27 +1,44 @@
-const checkLogin = require("../../middleware/auth.middleware");
-const uploader = require("../../middleware/uploader.middleware");
-const bodyValidator = require("../../middleware/validator.middleware");
-const categoryCtrl = require("./categories.controller");
-const CategoryDTO = require("./category.validator");
 const categoryRouter = require("express").Router();
+const { UserRoles } = require("../../config/constant");
+const { CategoryDataDTO } = require("./category.validator");
+const uploader = require("../../middleware/uploader.middleware");
+const categoryCtrl = require("./categories.controller");
+const checkLogin = require("../../middleware/auth.middleware");
+const bodyValidator = require("../../middleware/validator.middleware");
 
-categoryRouter.get("/", checkLogin(), categoryCtrl.listAll);
+categoryRouter.get("/for-home", categoryCtrl.getAllActiveCategories);
+categoryRouter.get("/:slug/detail", categoryCtrl.getDetailsBySlug);
+
+// CRUD
 categoryRouter.post(
   "/",
-  checkLogin(["seller"]),
+  checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
   uploader().single("image"),
-  bodyValidator(CategoryDTO),
-  categoryCtrl.create,
+  bodyValidator(CategoryDataDTO),
+  categoryCtrl.addCategory,
 );
 
-categoryRouter.get("/:categoryId", checkLogin(), categoryCtrl.getDetail);
-categoryRouter.put(
-  "/:categoryId",
-  checkLogin(["seller"]),
-  uploader().single("logo"),
-  bodyValidator(CategoryDTO),
-  categoryCtrl.update,
+categoryRouter.get(
+  "/",
+  checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
+  categoryCtrl.getAllCategories,
 );
-categoryRouter.delete("/:categoryId", checkLogin(), categoryCtrl.delete);
+categoryRouter.get(
+  "/:id",
+  checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
+  categoryCtrl.getCategoryById,
+);
+categoryRouter.put(
+  "/:id",
+  checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
+  uploader().single("image"),
+  bodyValidator(CategoryDataDTO),
+  categoryCtrl.updateCategoryData,
+);
+categoryRouter.delete(
+  "/:id",
+  checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
+  categoryCtrl.deleteCategoryById,
+);
 
 module.exports = categoryRouter;

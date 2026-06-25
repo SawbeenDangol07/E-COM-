@@ -1,15 +1,15 @@
+const { UserRoles, Status } = require("../../config/constant");
+const productService = require("../product/product.service");
 const categoryService = require("./categories.service");
-const { UserRoles } = require("../../config/constant");
 
 class CategoryController {
-  async create(req, res, next) {
+  async addCategory(req, res, next) {
     try {
-      const data = await categoryService.transformToCategoryCreate(req);
+      const data = await categoryService.transformToCategoryData(req);
       const category = await categoryService.storeCategory(data);
-
       res.json({
         data: category,
-        message: "Category Created Successfully",
+        message: "Category Created successfully",
         status: "CATEGORY_CREATED",
       });
     } catch (exception) {
@@ -17,149 +17,132 @@ class CategoryController {
     }
   }
 
-  async listAll(req, res, next) {
+  async getAllCategories(req, res, next) {
     try {
       let filter = {};
-      // let searchKeyword = req.query.search || req.query.keyword;
-      if (req.query.search) {
-        filter = {
-          $or: [{ name: new RegExp(req.query.search, "i") }],
-        };
-      }
-      if (req.query.status) {
+      if (req.loggedInUser.role !== UserRoles.ADMIN) {
         filter = {
           ...filter,
-          status: req.query.status,
+          createdBy: req.loggedInUser._id,
         };
       }
-
-      const config = {
-        page: +req.query.page || 1,
-        limit: +req.query.limit || 20,
-      };
-
-      const { data, pagination } = await categoryService.getAllRowsByFilter(
-        filter,
-        config,
-      );
+      const data = await categoryService.listAllCategoriesByFilter(filter);
       res.json({
         data: data,
-        message: "Category list fetched successfully",
-        status: "CATEGORY_LIST_FETCHED",
-        meta: { pagination },
+        message: "Category Listing ",
+        status: "CATEGORY_LIST",
       });
     } catch (exception) {
       next(exception);
     }
   }
 
-  async getDetail(req, res, next) {
+  async getAllActiveCategories(req, res, next) {
     try {
-      const category = await categoryService.getSingleRowsByFilter({
-        _id: req.params.categoryId,
-      });
-      if (!category) {
-        throw {
-          code: 404,
-          message: "Category not found",
-          status: "CATEGORY_NOT_FOUND",
-        };
-      }
-
+      let filter = { status: Status.ACTIVE };
+      const data = await categoryService.listAllCategoriesByFilter(filter);
       res.json({
-        data: category,
-        message: "Category fetched successfully",
-        status: "OK",
+        data: data,
+        message: "Category Listing ",
+        status: "CATEGORY_LIST",
       });
     } catch (exception) {
       next(exception);
     }
   }
 
-  async update(req, res, next) {
+  async getCategoryById(req, res, next) {
     try {
-      const category = await categoryService.getSingleRowsByFilter({
-        _id: req.params.categoryId,
+      const categoryDetail = await categoryService.validateCategoryDetail(
+        req.params.id,
+        req.loggedInUser,
+      );
+      res.json({
+        data: categoryDetail,
+        message: "Category Detail",
+        status: "CATEGORY_DETAIL",
       });
-      if (!category) {
-        throw {
-          code: 404,
-          message: "Category not found",
-          status: "CATEGORY_NOT_FOUND",
-        };
-      }
+    } catch (exception) {
+      next(exception);
+    }
+  }
 
-      const data = await categoryService.transformToCategoryUpdate(
+  async updateCategoryData(req, res, next) {
+    try {
+      const categoryDetail = await categoryService.validateCategoryDetail(
+        req.params.id,
+        req.loggedInUser,
+      );
+      let updateData = await categoryService.transformToCategoryUpdateData(
         req,
-        category,
+        categoryDetail,
       );
-
-      const update = await categoryService.updateSingleRowByFilter(
-        { _id: category._id },
-        data,
-      );
-
+      updateData = await categoryService.updateCategory(updateData, {
+        _id: categoryDetail._id,
+      });
       res.json({
-        data: update,
-        message: "Category Update Successful",
-        status: "OK",
+        data: updateData,
+        message: "Category Updated ",
+        status: "CATEGORY_UPDATED",
       });
     } catch (exception) {
       next(exception);
     }
   }
 
-  async delete(req, res, next) {
+  async deleteCategoryById(req, res, next) {
     try {
-      const loggedInUser = req.loggedInUser;
-
-      let filter = {
-        _id: req.params.categoryId,
-      };
-
-      if (loggedInUser.role !== UserRoles.ADMIN) {
-        filter = {
-          ...filter,
-          createdBy: loggedInUser._id,
-        };
-      }
-      const category = await categoryService.getSingleRowsByFilter(filter);
-
-      if (!category) {
-        throw {
-          code: 404,
-          message: "Category not Found",
-          status: "CATEGORY_NOT_FOUND_ERR",
-        };
-      }
-
-      const del = await categoryService.delete(filter);
-
+      const categoryDetail = await categoryService.validateCategoryDetail(
+        req.params.id,
+        req.loggedInUser,
+      );
+      const del = await categoryService.deleteDataByFilter({
+        _id: categoryDetail._id,
+      });
       res.json({
         data: del,
-        message: "Category Delted Successfully",
-        status: "OK",
+        message: "Category deleted ",
+        status: "CATEGORY_DELETED",
       });
     } catch (exception) {
       next(exception);
     }
   }
 
-  async getDetailBySlug(req, res, next) {
+  async getDetailsBySlug(req, res, next) {
     try {
-      const categoryDetail = await categoryService.getSingleRowsByFilter({
+      const categoryDetail = await categoryService.getSingleRowByFilter({
         slug: req.params.slug,
       });
-      //to list all the products associate with this category
 
+      if (!categoryDetail) {
+        res.json({
+          code: 404,
+          message: "Categoty Not Found",
+          status: "CATEGORY_NOT_FOUND_ERR",
+        });
+      }
+
+      const page = req.query.page || 1;
+      const limit = req.query.limit || 20;
+      const { data, pagination } = await productService.getAllRowsByFilter(
+        {
+          category: { $in: [categoryDetail._id] },
+          status: Status.ACTIVE,
+        },
+        {
+          page,
+          limit,
+        },
+      );
       res.json({
         data: {
           category: categoryDetail,
-          products: [],
+          products: data,
         },
-        message: "Category detail",
-        status: "OK",
-        meta: {},
+        message: "Category Detail",
+        status: "ok",
+        meta: pagination,
       });
     } catch (exception) {
       next(exception);
@@ -168,5 +151,6 @@ class CategoryController {
 }
 
 const categoryCtrl = new CategoryController();
-
 module.exports = categoryCtrl;
+
+// module.exports = new CategoryController()
