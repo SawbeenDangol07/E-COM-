@@ -1,7 +1,8 @@
 const slugify = require("slugify");
-const cloudinarySvc = require("../../Services/cloudinary.service");
+// const cloudinarySvc = require("../../Services/cloudinary.service");
 const CategoryModel = require("./categories.model");
 const { UserRoles } = require("../../config/constant");
+const cloudinaryService = require("../../services/cloudinary.service");
 
 class CategoryService {
   async transformToCategoryData(req) {
@@ -11,7 +12,7 @@ class CategoryService {
         lower: true,
       });
       if (req.file) {
-        data.image = await cloudinarySvc.singleFileUpload(
+        data.image = await cloudinaryService.singleFileUpload(
           req.file.path,
           "category",
         );
@@ -37,7 +38,7 @@ class CategoryService {
       const data = req.body;
 
       if (req.file) {
-        data.image = await cloudinarySvc.singleFileUpload(
+        data.image = await cloudinaryService.singleFileUpload(
           req.file.path,
           "category",
         );
