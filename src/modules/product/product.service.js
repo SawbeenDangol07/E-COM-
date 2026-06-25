@@ -1,5 +1,6 @@
 const slugify = require("slugify");
 const cloudinaryService = require("../../Services/cloudinary.service");
+const ProductModel = require("./product.model");
 
 class ProductService {
   async transformToProduct(req) {
@@ -36,7 +37,25 @@ class ProductService {
             cloudinaryService.singleFileUpload(image.path, "/products"),
           );
         });
+        const result = Promise.allSettled(images);
+        data.image = [];
+        result.forEach((res) => {
+          if (res.status === "fulfilled") {
+            data.images.push(res.value);
+          }
+        });
       }
+
+      return data;
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
+  async createProduct(data) {
+    try {
+      const product = new ProductModel(data);
+      await product.save;
     } catch (exception) {
       throw exception;
     }
