@@ -1,20 +1,45 @@
+const productRouter = require("express").Router();
 const { UserRoles } = require("../../config/constant");
 const checkLogin = require("../../middleware/auth.middleware");
 const uploader = require("../../middleware/uploader.middleware");
 const bodyValidator = require("../../middleware/validator.middleware");
 const productCtrl = require("./product.controller");
-const ProductDTO = require("./product.validator");
+const { ProductDTO } = require("./product.validator");
 
-const productRouter = require("express").Router();
+productRouter.get("/:slug/detail", productCtrl.getProductBySlug);
+productRouter.get("/get-all", productCtrl.getPublicProduct);
 
-// productRouter.post(
-//   "/",
-//   checkLogin([UserRoles.ADMIN, UserRoles.SELLER]),
-//   uploader().array["images"],
-//   bodyValidator(ProductDTO),
-//   productCtrl.createProduct,
-// );
+productRouter.post(
+  "/",
+  checkLogin([UserRoles.SELLER]),
+  uploader().array("images"),
+  bodyValidator(ProductDTO),
+  productCtrl.createProduct,
+);
 
-// productRouter.get("/", checkLogin([UserRoles.SELLER]), productCtrl.getAllProducts);
+productRouter.get(
+  "/",
+  checkLogin([UserRoles.SELLER]),
+  productCtrl.getAllProduct,
+);
+
+productRouter.get(
+  "/:id",
+  checkLogin([UserRoles.SELLER]),
+  productCtrl.getProductById,
+);
+productRouter.put(
+  "/:id",
+  checkLogin([UserRoles.SELLER]),
+  uploader().array("images"),
+  bodyValidator(ProductDTO),
+  productCtrl.updateProductById,
+);
+
+productRouter.delete(
+  "/:id",
+  checkLogin([UserRoles.SELLER]),
+  productCtrl.deleteProductById,
+);
 
 module.exports = productRouter;
